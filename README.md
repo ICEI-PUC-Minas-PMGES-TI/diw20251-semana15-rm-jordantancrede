@@ -9,10 +9,10 @@ Sugerimos o uso das seguintes ferramentas acessíveis: [FullCalendar](https://fu
 
 ## Informações do trabalho
 
-- Nome:
-- Matricula:
-- Proposta de projeto escolhida:
-- Breve descrição sobre seu projeto:
+- Nome: Jordan Tancrede
+- Matricula: 94863
+- Proposta de projeto escolhida: Eventos
+- Breve descrição sobre seu projeto: Calendário interativo com datas dos eventos, Gráfico de eventos por tipo e Mapa com localização dos eventos.
 
 **Print da tela com a implementação**
 

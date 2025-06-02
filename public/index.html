@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Eventos - Calendário, Gráfico e Mapa</title>
+  <!-- FullCalendar CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
+  <!-- Mapbox GL CSS -->
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+    body {
+      margin: 0;
+      font-family: 'Montserrat', sans-serif;
+      background: #f4f6f8;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    header {
+      background: #3f51b5;
+      color: white;
+      padding: 1.5rem 2rem;
+      text-align: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    header h1 {
+      margin: 0;
+      font-weight: 700;
+      font-size: 1.8rem;
+      letter-spacing: 0.05em;
+    }
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto 400px;
+      gap: 2rem;
+      padding: 2rem;
+      max-width: 1200px;
+      margin: 0 auto 3rem auto;
+      box-sizing: border-box;
+      width: 100%;
+    }
+    /* Calendar spanning two rows on left side */
+    #calendar {
+      grid-column: 1 / 2;
+      grid-row: 1 / 3;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 6px 12px rgb(63 81 181 / 0.15);
+      padding: 1rem;
+    }
+    #chart-container {
+      grid-column: 2 / 3;
+      grid-row: 1 / 2;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 6px 12px rgb(63 81 181 / 0.15);
+      padding: 1rem 2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    #chart-container h2 {
+      margin: 0 0 1rem 0;
+      font-weight: 700;
+      font-size: 1.3rem;
+      color: #3f51b5;
+      text-align: center;
+    }
+    #map {
+      grid-column: 2 / 3;
+      grid-row: 2 / 3;
+      border-radius: 12px;
+      box-shadow: 0 6px 12px rgb(63 81 181 / 0.15);
+      height: 100%;
+      width: 100%;
+      min-height: 380px;
+    }
+
+    /* FullCalendar customizations for modern style */
+    .fc {
+      font-family: 'Montserrat', sans-serif;
+      border-radius: 8px;
+    }
+    .fc-toolbar-title {
+      font-weight: 700;
+      font-size: 1.3rem;
+      color: #3f51b5;
+    }
+    .fc-daygrid-day-number {
+      font-weight: 600;
+    }
+    .fc-event {
+      background-color: #3f51b5 !important;
+      border: none !important;
+      border-radius: 6px !important;
+      font-size: 0.85rem !important;
+      cursor: pointer;
+    }
+    .fc-event:hover {
+      background-color: #303f9f !important;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      main {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+      }
+      #calendar {
+        grid-column: 1 / 2;
+        grid-row: 1 / 2;
+      }
+      #chart-container {
+        grid-column: 1 / 2;
+        grid-row: 2 / 3;
+      }
+      #map {
+        grid-column: 1 / 2;
+        grid-row: 3 / 4;
+        min-height: 300px;
+      }
+    }
+
+    footer {
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.9rem;
+      color: #777;
+      background: #e0e0e0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Eventos</h1>
+  </header>
+  <main>
+    <section id="calendar"></section>
+
+    <section id="chart-container">
+      <h2>Eventos por Tipo</h2>
+      <canvas id="eventsChart" aria-label="Gráfico de eventos por tipo" role="img"></canvas>
+    </section>
+
+    <section id="map"></section>
+  </main>
+
+  <!-- FullCalendar JS and dependent libs -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
+  <!-- Mapbox GL JS -->
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
+
+  <script>
+    // Sample event data including date, title, type, and location with city and coordinates
+    const events = [
+      {
+        id: '1',
+        title: 'Show de Música',
+        start: '2024-07-05',
+        type: 'Show',
+        location: {
+          city: 'São Paulo',
+          coords: [-46.633309, -23.55052]
+        }
+      },
+      {
+        id: '2',
+        title: 'Palestra sobre tecnologia',
+        start: '2024-07-10',
+        type: 'Palestra',
+        location: {
+          city: 'Rio de Janeiro',
+          coords: [-43.209373, -22.903539]
+        }
+      },
+      {
+        id: '3',
+        title: 'Workshop de Fotografia',
+        start: '2024-07-15',
+        type: 'Workshop',
+        location: {
+          city: 'Belo Horizonte',
+          coords: [-43.937796, -19.92083]
+        }
+      },
+      {
+        id: '4',
+        title: 'Show Acústico',
+        start: '2024-07-20',
+        type: 'Show',
+        location: {
+          city: 'Curitiba',
+          coords: [-49.264374, -25.41954]
+        }
+      },
+      {
+        id: '5',
+        title: 'Palestra Motivacional',
+        start: '2024-07-22',
+        type: 'Palestra',
+        location: {
+          city: 'Porto Alegre',
+          coords: [-51.217658, -30.034647]
+        }
+      },
+      {
+        id: '6',
+        title: 'Workshop de Culinária',
+        start: '2024-07-25',
+        type: 'Workshop',
+        location: {
+          city: 'Fortaleza',
+          coords: [-38.526669, -3.731862]
+        }
+      }
+    ];
+
+    // Initialize FullCalendar
+    document.addEventListener('DOMContentLoaded', function () {
+      const calendarEl = document.getElementById('calendar');
+      const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'pt-br',
+        height: '100%',
+        events: events.map(evt => ({
+          id: evt.id,
+          title: evt.title,
+          start: evt.start,
+          extendedProps: {
+            type: evt.type,
+            location: evt.location.city
+          }
+        })),
+        eventDidMount: function(info) {
+          // Tooltip on event hover with type and location
+          const tooltip = document.createElement('div');
+          tooltip.style.position = 'absolute';
+          tooltip.style.background = '#3f51b5cc';
+          tooltip.style.color = 'white';
+          tooltip.style.padding = '4px 8px';
+          tooltip.style.borderRadius = '6px';
+          tooltip.style.fontSize = '0.75rem';
+          tooltip.style.whiteSpace = 'nowrap';
+          tooltip.style.zIndex = '1000';
+          tooltip.style.pointerEvents = 'none';
+          tooltip.textContent = `${info.event.title} (${info.event.extendedProps.type}) - ${info.event.extendedProps.location}`;
+          info.el.addEventListener('mouseenter', () => {
+            document.body.appendChild(tooltip);
+            const rect = info.el.getBoundingClientRect();
+            tooltip.style.top = (rect.top - tooltip.offsetHeight - 6) + 'px';
+            tooltip.style.left = (rect.left + rect.width / 2 - tooltip.offsetWidth / 2) + 'px';
+          });
+          info.el.addEventListener('mouseleave', () => {
+            if (tooltip.parentNode) tooltip.parentNode.removeChild(tooltip);
+          });
+        },
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        }
+      });
+      calendar.render();
+
+      // Prepare data for Chart.js based on events' types
+      const typesCount = {};
+      events.forEach(e => {
+        typesCount[e.type] = (typesCount[e.type] || 0) + 1;
+      });
+      const chartLabels = Object.keys(typesCount);
+      const chartData = Object.values(typesCount);
+
+      // Define colors for chart slices or bars
+      const chartColors = {
+        'Show': '#3f51b5',
+        'Palestra': '#ff5722',
+        'Workshop': '#009688'
+      };
+
+      // Create pie chart for events by type
+      const ctx = document.getElementById('eventsChart').getContext('2d');
+      const eventsChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: chartLabels,
+          datasets: [{
+            label: 'Eventos por Tipo',
+            data: chartData,
+            backgroundColor: chartLabels.map(type => chartColors[type] || '#666'),
+            borderColor: '#fff',
+            borderWidth: 2,
+            hoverOffset: 10
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { font: { family: 'Montserrat', size: 14, weight: '600' } }
+            },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => {
+                  let label = ctx.label || '';
+                  let value = ctx.parsed || 0;
+                  return `${label}: ${value} evento${value !== 1 ? 's' : ''}`;
+                }
+              }
+            }
+          }
+        }
+      });
+
+      // Mapbox Access Token (public demo token)
+      mapboxgl.accessToken = 'pk.eyJ1IjoibWFwYm94dXNlcmZvciIsImEiOiJja2x5ZndlcGcwMGxxMnFvNDQ2cnRpejNzIn0.NviNllwD2rG12YTygx_5AA';
+
+      // Initialize Mapbox map
+      const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v12',
+        center: [-47.8825, -15.7942], // Approximate center of Brazil
+        zoom: 3
+      });
+
+      // Add zoom and rotation controls to the map.
+      map.addControl(new mapboxgl.NavigationControl());
+
+      // Add markers for events with popups
+      events.forEach(ev => {
+        const marker = new mapboxgl.Marker({ color: chartColors[ev.type] || '#666' })
+          .setLngLat(ev.location.coords)
+          .setPopup(new mapboxgl.Popup({ offset: 25 })
+            .setHTML(`<strong>${ev.title}</strong><br/>${ev.type}<br/>${ev.location.city}<br/><small>${ev.start}</small>`))
+          .addTo(map);
+      });
+
+      // Resize map after calendar and chart loaded to fix display issues
+      setTimeout(() => map.resize(), 500);
+    });
+  </script>
+  <footer>
+    &copy; 2024 Eventos - Todos os direitos reservados.
+  </footer>
+</body>
+</html>
+
