@@ -16,8 +16,8 @@ Sugerimos o uso das seguintes ferramentas acessíveis: [FullCalendar](https://fu
 
 **Print da tela com a implementação**
 
-<< Coloque aqui uma breve explicação da implementação feita nessa etapa>>
+<<Um calendário de eventos é uma ferramenta visual que lista atividades ou acontecimentos planejados ou que já ocorreram, geralmente em formato de calendário, com datas e horários específicos.>>
 
-<<  COLOQUE A IMAGEM TELA 1 AQUI >>
+<< ![image](https://github.com/user-attachments/assets/6e38a359-50a5-48fd-bb86-4c84dd997e46) >>
 
 <<  COLOQUE A IMAGEM TELA 2 AQUI >>
